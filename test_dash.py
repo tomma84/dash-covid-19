@@ -52,22 +52,11 @@ etichette = {
     'casi_testati' : 'Casi testati',
 }
 
-scelte=[
-    {'label': 'Terapie Intensive', 'value': 'terapia_intensiva'},
-    {'label': 'Ricoverati con sintomi', 'value': 'ricoverati_con_sintomi'},
-    {'label': 'Totale Ospedalizzati', 'value': 'totale_ospedalizzati'},
-    {'label': 'Isolamento domiciliare', 'value': 'isolamento_domiciliare'},
-    {'label': 'Nuovi Positivi', 'value': 'nuovi_positivi'},
-    {'label': 'Totale Positivi', 'value': 'totale_positivi'},
-    {'label': 'Variazione Totale Positivi', 'value': 'variazione_totale_positivi'},
-    {'label': 'Deceduti', 'value': 'deceduti'},
-    {'label': 'Dimessi guariti', 'value': 'dimessi_guariti'},
-    {'label': 'Casi da sospetto diagnostico', 'value': 'casi_da_sospetto_diagnostico'},
-    {'label': 'Casi da screening', 'value': 'casi_da_screening'},
-    {'label': 'Totale Casi', 'value': 'totale_casi'},
-    {'label': 'Tamponi', 'value': 'tamponi'},
-    {'label': 'Casi testati', 'value': 'casi_testati'},
-]
+scelte = []
+for chiave in etichette:
+    scelte.append(
+        {'label': etichette[chiave], 'value': chiave}
+    )
 
 # Estrazione delle date dal DataFrame per le etichette dello slider
 marks_date = {}
@@ -131,7 +120,6 @@ app.layout = html.Div(children=[
                 options=scelte,
                 value='terapia_intensiva',
                 clearable=False
-
             ),
 
             dcc.Graph(
@@ -178,6 +166,7 @@ app.layout = html.Div(children=[
                     0 : '0',
                 }
             ),
+
             dcc.Slider(
                 id='slider_periodo_previsione',
                 min=1,
@@ -186,6 +175,7 @@ app.layout = html.Div(children=[
                 value=20,
                 marks = marks_previsione
             ),
+
         ]),
         dcc.Tab(label='Regioni ', children=[
             dcc.Dropdown(
@@ -216,7 +206,6 @@ app.layout = html.Div(children=[
 ])
 
 @app.callback(
-    
         Output(component_id='grafico_andamento', component_property='figure'),
     [
         Input(component_id='selettore_andamento', component_property='value'),
@@ -272,7 +261,6 @@ def update_stima(dato_stima, range_stima, previsione):
     ]
 )
 def updata_regioni(dato_regioni, data_regione):
-    # grafico regioni
     dati_ridotti_regioni = dati_regioni.loc[dati_regioni.data == dati.data[data_regione]]
     
     dati_ridotti_regioni = dati_ridotti_regioni[['denominazione_regione', dato_regioni]]
