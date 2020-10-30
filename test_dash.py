@@ -216,26 +216,28 @@ app.layout = html.Div(children=[
 ])
 
 @app.callback(
-    [
+    
         Output(component_id='grafico_andamento', component_property='figure'),
-        Output(component_id='grafico_stima', component_property='figure'),
-        Output(component_id='grafico_regioni', component_property='figure'),
-    ],
     [
         Input(component_id='selettore_andamento', component_property='value'),
         Input(component_id='slider_periodo', component_property='value'),
-        Input(component_id='selettore_stima', component_property='value'),
-        Input(component_id='slider_periodo_stima', component_property='value'),
-        Input(component_id='slider_periodo_previsione', component_property='value'),
-        Input(component_id='selettore_andamento_regioni', component_property='value'),
-        Input(component_id='slider_periodo_regioni', component_property='value'),
     ]
 )
-
-def update_figure(dato_grafico, date, dato_stima, range_stima, previsione, dato_regioni, data_regione):
+def update_figure(dato_grafico, date):
     dati_grafico = dati[date[0]:date[1]+1]
     fig_andamento = px.bar(dati_grafico, x="data", y=dato_grafico)
 
+    return fig_andamento
+
+@app.callback(
+        Output(component_id='grafico_stima', component_property='figure'),
+    [
+        Input(component_id='selettore_stima', component_property='value'),
+        Input(component_id='slider_periodo_stima', component_property='value'),
+        Input(component_id='slider_periodo_previsione', component_property='value'),
+    ]
+)
+def update_stima(dato_stima, range_stima, previsione):
     y = dati[dato_stima][range_stima[0]:range_stima[1]] if range_stima[1]<0 else dati[dato_stima][range_stima[0]:]
     # y = dati[dato_stima][range_stima[0]:]
     x = np.arange(range_stima[0]+1,1+range_stima[1]) if range_stima[1]<0 else np.arange(range_stima[0]+1,1)
@@ -259,10 +261,18 @@ def update_figure(dato_grafico, date, dato_stima, range_stima, previsione, dato_
 
     fig_stima.update_layout(height=800)
 
+    return fig_stima
 
+@app.callback(
+    
+        Output(component_id='grafico_regioni', component_property='figure'),
+    [
+        Input(component_id='selettore_andamento_regioni', component_property='value'),
+        Input(component_id='slider_periodo_regioni', component_property='value'),
+    ]
+)
+def updata_regioni(dato_regioni, data_regione):
     # grafico regioni
-
-
     dati_ridotti_regioni = dati_regioni.loc[dati_regioni.data == dati.data[data_regione]]
     
     dati_ridotti_regioni = dati_ridotti_regioni[['denominazione_regione', dato_regioni]]
@@ -291,7 +301,8 @@ def update_figure(dato_grafico, date, dato_stima, range_stima, previsione, dato_
     fig_regioni.update_layout(width=900)
     fig_regioni.update_geos(fitbounds="locations", visible=False)
 
-    return (fig_andamento, fig_stima, fig_regioni)
+    return fig_regioni
+
 
 
 if __name__ == '__main__':
