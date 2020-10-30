@@ -227,13 +227,13 @@ def update_figure(dato_grafico, date):
     ]
 )
 def update_stima(dato_stima, range_stima, previsione):
-    y = dati[dato_stima][range_stima[0]:range_stima[1]] if range_stima[1]<0 else dati[dato_stima][range_stima[0]:]
-    # y = dati[dato_stima][range_stima[0]:]
-    x = np.arange(range_stima[0]+1,1+range_stima[1]) if range_stima[1]<0 else np.arange(range_stima[0]+1,1)
-    # x = np.arange(range_stima[0]+1,1)
+    y = dati[dato_stima][range_stima[0]-1:range_stima[1]] if range_stima[1]<0 else dati[dato_stima][range_stima[0]-1:]
+    # y = dati[dato_stima][range_stima[0]-1:]
+    x = np.arange(range_stima[0],1+range_stima[1]) if range_stima[1]<0 else np.arange(range_stima[0],1)
+    # x = np.arange(range_stima[0],1)
     [a, b], res1 = curve_fit(lambda x1,a,b: a*np.exp(b*x1),  x,  y)
-    y = dati[dato_stima][range_stima[0]:]
-    x = np.arange(range_stima[0]+1,1)
+    y = dati[dato_stima][range_stima[0]-1:]
+    x = np.arange(range_stima[0],1)
     fig_stima = go.Figure()
     fig_stima.add_trace(go.Scatter(x=x, y=y,
                     mode='markers',
@@ -241,7 +241,7 @@ def update_stima(dato_stima, range_stima, previsione):
 
     # y1 = a * np.exp(b * x)
     # y = dati[dato_stima][-N:]
-    x = np.arange(range_stima[0]+1,previsione+1)
+    x = np.arange(range_stima[0],previsione+1)
     y1 = a * np.exp(b * x)
 
     fig_stima.add_trace(go.Scatter(x=x, y=y1,
