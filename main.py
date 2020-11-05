@@ -23,11 +23,16 @@ url = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-
 dati = pd.read_csv(url, error_bad_lines=False)
 
 # Salvataggio dei dati in locale
-dati.to_csv('dpc-covid19-ita-andamento-nazionale.csv')
+# dati.to_csv('dpc-covid19-ita-andamento-nazionale.csv')
 
+# URL dei dati aggiornati giornalmente
 url = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv'
+
+# Lettura dei dati dall'url
 dati_regioni = pd.read_csv(url, error_bad_lines=False)
-dati_regioni.to_csv('dpc-covid19-ita-regioni.csv')
+
+# Salvataggio dei dati in locale
+# dati_regioni.to_csv('dpc-covid19-ita-regioni.csv')
 
 regioni = json.load(open('regioni.geojson','r'))
 
