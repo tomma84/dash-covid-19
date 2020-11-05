@@ -183,7 +183,7 @@ app.layout = html.Div(children=[
             ),
 
         ]),
-        dcc.Tab(label='Dati Regioni ', children=[
+        dcc.Tab(label='Mappa Regioni ', children=[
             dcc.Dropdown(
                 id='selettore_andamento_regioni',
                 options=scelte,
@@ -207,7 +207,39 @@ app.layout = html.Div(children=[
             ),
 
         ]),
-        dcc.Tab(label='Stime Regioni ', children=[
+
+        dcc.Tab(label='Visualizzazione dati Regioni', children=[
+
+            dcc.Dropdown(
+                id='selettore_dati_regione',
+                options=nomi_regioni,
+                value='Lazio',
+                clearable=False
+            ),
+
+            dcc.Dropdown(
+                id='selettore_andamento_regione',
+                options=scelte,
+                value='terapia_intensiva',
+                clearable=False
+
+            ),
+
+            dcc.Graph(
+                id='grafico_andamento_regione'
+            ),
+
+            dcc.RangeSlider(
+                id='slider_periodo_regione',
+                min=0,
+                max=dati.shape[0],
+                step=1,
+                value=[0,dati.shape[0]],
+                marks = marks_date
+            ),
+        ]),
+
+        dcc.Tab(label='Stima dati Regioni ', children=[
             dcc.Dropdown(
                 id='selettore_regione',
                 options=nomi_regioni,
@@ -287,8 +319,23 @@ app.layout = html.Div(children=[
         Input(component_id='slider_periodo', component_property='value'),
     ]
 )
-def update_figure(dato_grafico, date):
+def update_dati(dato_grafico, date):
     dati_grafico = dati[date[0]:date[1]+1]
+    fig_andamento = px.bar(dati_grafico, x="data", y=dato_grafico)
+
+    return fig_andamento
+
+@app.callback(
+        Output(component_id='grafico_andamento_regione', component_property='figure'),
+    [
+        Input(component_id='selettore_andamento_regione', component_property='value'),
+        Input(component_id='slider_periodo_regione', component_property='value'),
+        Input(component_id='selettore_dati_regione', component_property='value'),
+    ]
+)
+def update_dati_regione(dato_grafico, date, regione_selezionata):
+    dati_analisi_regione = dati_regioni.loc[dati_regioni['denominazione_regione'] == regione_selezionata]
+    dati_grafico = dati_analisi_regione[date[0]:date[1]+1]
     fig_andamento = px.bar(dati_grafico, x="data", y=dato_grafico)
 
     return fig_andamento
