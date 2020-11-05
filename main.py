@@ -15,10 +15,6 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 # CONFIGGURAZIONE DELLA APP DASH
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-# per creare il server
-# server = app.server
-
-# dati = pd.read_csv('dpc-covid19-ita-andamento-nazionale.csv')
 
 # URL dei dati aggiornati giornalmente
 url = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv'
@@ -57,6 +53,11 @@ for chiave in etichette:
     scelte.append(
         {'label': etichette[chiave], 'value': chiave}
     )
+
+nomi_regioni = []
+for reg in dati_regioni['denominazione_regione'].unique():
+    # print(reg + ' tipo: ' + str(type(reg)))
+    nomi_regioni.append({'label': reg, 'value': reg})
 
 # Estrazione delle date dal DataFrame per le etichette dello slider
 marks_date = {}
@@ -177,7 +178,7 @@ app.layout = html.Div(children=[
             ),
 
         ]),
-        dcc.Tab(label='Regioni ', children=[
+        dcc.Tab(label='Dati Regioni ', children=[
             dcc.Dropdown(
                 id='selettore_andamento_regioni',
                 options=scelte,
@@ -201,7 +202,76 @@ app.layout = html.Div(children=[
             ),
 
         ]),
+        dcc.Tab(label='Stime Regioni ', children=[
+            dcc.Dropdown(
+                id='selettore_regione',
+                options=nomi_regioni,
+                value='Lazio',
+                clearable=False
+            ),
 
+            dcc.Dropdown(
+                id='selettore_stima_regione',
+                options=scelte,
+                value='terapia_intensiva',
+                clearable=False
+            ),
+
+            dcc.Graph(
+                id='grafico_stima_regione'
+            ),
+
+            dcc.RangeSlider(
+                id='slider_periodo_stima_regione',
+                min=-30,
+                max=0,
+                step=1,
+                value=[-10,0],
+                marks = {
+                    -30 : '-30',
+                    -29 : '-29',
+                    -28 : '-28',
+                    -27 : '-27',
+                    -26 : '-26',
+                    -25 : '-25',
+                    -24 : '-24',
+                    -23 : '-23',
+                    -22 : '-22',
+                    -21 : '-21',
+                    -20 : '-20',
+                    -19 : '-19',
+                    -18 : '-18',
+                    -17 : '-17',
+                    -16 : '-16',
+                    -15 : '-15',
+                    -14 : '-14',
+                    -13 : '-13',
+                    -12 : '12',
+                    -11 : '-11',
+                    -10 : '-10',
+                    -9 : '-9',
+                    -8 : '-8',
+                    -7 : '-7',
+                    -6 : '-6',
+                    -5 : '-5',
+                    -4 : '-4',
+                    -3 : '-3',
+                    -2 : '-2',
+                    -1 : '-1',
+                    0 : '0',
+                }
+            ),
+
+            dcc.Slider(
+                id='slider_periodo_previsione_regione',
+                min=1,
+                max=60,
+                step=1,
+                value=20,
+                marks = marks_previsione
+            ),
+
+        ]),
     ])
 ])
 
@@ -251,6 +321,43 @@ def update_stima(dato_stima, range_stima, previsione):
     fig_stima.update_layout(height=800)
 
     return fig_stima
+
+@app.callback(
+        Output(component_id='grafico_stima_regione', component_property='figure'),
+    [
+        Input(component_id='selettore_stima_regione', component_property='value'),
+        Input(component_id='slider_periodo_stima_regione', component_property='value'),
+        Input(component_id='slider_periodo_previsione_regione', component_property='value'),
+        Input(component_id='selettore_regione', component_property='value'),
+    ]
+)
+def update_stima_regioni(dato_stima, range_stima, previsione, regione_selezionata):
+    dati_analisi_regione = dati_regioni.loc[dati_regioni['denominazione_regione'] == regione_selezionata]
+    y = dati_analisi_regione[dato_stima][range_stima[0]-1:range_stima[1]] if range_stima[1]<0 else dati_analisi_regione[dato_stima][range_stima[0]-1:]
+    # y = dati[dato_stima][range_stima[0]-1:]
+    x = np.arange(range_stima[0],1+range_stima[1]) if range_stima[1]<0 else np.arange(range_stima[0],1)
+    # x = np.arange(range_stima[0],1)
+    [a, b], res1 = curve_fit(lambda x1,a,b: a*np.exp(b*x1),  x,  y)
+    y = dati_analisi_regione[dato_stima][range_stima[0]-1:]
+    x = np.arange(range_stima[0],1)
+    fig_stima = go.Figure()
+    fig_stima.add_trace(go.Scatter(x=x, y=y,
+                    mode='markers',
+                    name='Dati attuali'))
+
+    # y1 = a * np.exp(b * x)
+    # y = dati[dato_stima][-N:]
+    x = np.arange(range_stima[0],previsione+1)
+    y1 = a * np.exp(b * x)
+
+    fig_stima.add_trace(go.Scatter(x=x, y=y1,
+                    mode='lines',
+                    name='Stima'))
+
+    fig_stima.update_layout(height=800)
+
+    return fig_stima
+
 
 @app.callback(
     
